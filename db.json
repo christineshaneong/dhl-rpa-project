@@ -1,0 +1,32 @@
+{
+  "incidents": [
+    {
+      "title": "Test",
+      "description": "Test",
+      "sourceFile": "Test",
+      "status": "Processed",
+      "priority": "Medium",
+      "createdAt": "2026-05-09T06:51:39.194Z",
+      "id": "p_sVYo1tGNQ"
+    },
+    {
+      "title": "Test",
+      "description": "Test",
+      "sourceFile": "test",
+      "status": "Processed",
+      "priority": "Medium",
+      "createdAt": "2026-05-09T06:54:10.939Z",
+      "id": "pzoV6R27Xms"
+    },
+    {
+      "title": "test 2",
+      "description": "test 2",
+      "sourceFile": "test 2",
+      "status": "Processed",
+      "priority": "Medium",
+      "createdAt": "2026-05-09T06:54:39.639Z",
+      "id": "j9pnlP7yISc"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
