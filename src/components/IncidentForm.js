@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabaseClient'; // Swapped from local api to Supabase
+import { supabase } from '../lib/supabaseClient';
 
 const IncidentForm = ({ onUploadSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(''); // New state for robot feedback
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -12,48 +13,42 @@ const IncidentForm = ({ onUploadSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setStatusMessage('PROCESSING...'); 
 
-    // Prepare the data for Supabase
-    // Note: Ensure your Supabase table columns match these keys (title, description, sourceFile, etc.)
     const newEntry = {
       title: formData.title,
       description: formData.description,
-      source_file: formData.sourceFile, // Map sourceFile to source_file if using snake_case in SQL
+      source_file: formData.sourceFile, 
       status: 'Processed',
       priority: 'Medium'
-      // createdAt: Supabase adds this automatically if you have a created_at column
     };
     
     try {
       const { error } = await supabase
-        .from('incidents') // Your table name in Supabase
+        .from('incidents') 
         .insert([newEntry]);
 
       if (error) throw error;
       
-      // Clear form
       setFormData({ title: '', description: '', sourceFile: '' });
+      setStatusMessage('SUCCESS: SAVED TO CLOUD'); // Robot reads this text
       
-      // Instead of a full window.location.reload(), we call the refresh function from App.js
       if (onUploadSuccess) onUploadSuccess();
       
-      alert("Success! Saved to Cloud Database.");
     } catch (err) {
-      console.error("Supabase Database Error:", err.message);
-      alert("Error: " + err.message);
+      console.error("Supabase Error:", err.message);
+      setStatusMessage('ERROR: ' + err.message);
     } finally {
       setIsSubmitting(false);
+      // Auto-clear message after 5 seconds so it's fresh for the next robot run
+      setTimeout(() => setStatusMessage(''), 5000);
     }
   };
 
   return (
     <div style={{ 
-      padding: '25px', 
-      border: '1px solid #ddd', 
-      marginBottom: '30px', 
-      borderRadius: '10px', 
-      backgroundColor: '#ffffff',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
+      padding: '25px', border: '1px solid #ddd', marginBottom: '30px', 
+      borderRadius: '10px', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
     }}>
       <h3 style={{ color: '#d40511', marginTop: 0, borderBottom: '2px solid #d40511', paddingBottom: '10px' }}>
         DHL RPA Cloud Console
@@ -77,15 +72,9 @@ const IncidentForm = ({ onUploadSuccess }) => {
           <textarea 
             id="input-description"
             style={{ 
-              display: 'block', 
-              width: '100%', 
-              height: '140px', 
-              padding: '12px', 
-              borderRadius: '4px', 
-              border: '1px solid #ccc', 
-              fontFamily: 'inherit',
-              boxSizing: 'border-box',
-              resize: 'vertical'
+              display: 'block', width: '100%', height: '140px', padding: '12px', 
+              borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit',
+              boxSizing: 'border-box', resize: 'vertical'
             }}
             placeholder="AI Summary will appear here..." 
             value={formData.description}
@@ -112,20 +101,26 @@ const IncidentForm = ({ onUploadSuccess }) => {
           disabled={isSubmitting}
           style={{ 
             backgroundColor: isSubmitting ? '#ccc' : '#ffcc00', 
-            color: '#000', 
-            padding: '15px', 
-            border: 'none', 
-            fontWeight: 'bold', 
-            cursor: isSubmitting ? 'not-allowed' : 'pointer', 
-            borderRadius: '4px', 
-            width: '100%',
-            fontSize: '16px',
-            transition: 'background-color 0.3s'
+            color: '#000', padding: '15px', border: 'none', fontWeight: 'bold', 
+            cursor: isSubmitting ? 'not-allowed' : 'pointer', borderRadius: '4px', 
+            width: '100%', fontSize: '16px', transition: 'background-color 0.3s'
           }}
         >
           {isSubmitting ? 'SAVING TO CLOUD...' : 'SUBMIT TO KNOWLEDGE BASE'}
         </button>
       </form>
+
+      {/* NEW: Robot-readable status display instead of popup */}
+      {statusMessage && (
+        <div id="rpa-status" style={{ 
+          marginTop: '15px', padding: '12px', borderRadius: '4px', textAlign: 'center', fontWeight: 'bold',
+          backgroundColor: statusMessage.includes('ERROR') ? '#ffebee' : '#e8f5e9',
+          color: statusMessage.includes('ERROR') ? '#c62828' : '#2e7d32',
+          border: `1px solid ${statusMessage.includes('ERROR') ? '#ef9a9a' : '#a5d6a7'}`
+        }}>
+          {statusMessage}
+        </div>
+      )}
     </div>
   );
 };
