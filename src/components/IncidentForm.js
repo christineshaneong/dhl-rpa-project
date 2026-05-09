@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 
 const IncidentForm = ({ onUploadSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(''); // Feedback for UiPath
+  const [statusMessage, setStatusMessage] = useState(''); 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -24,21 +24,15 @@ const IncidentForm = ({ onUploadSuccess }) => {
     };
     
     try {
-      // 1. Insert data into Supabase
       const { error } = await supabase
         .from('incidents') 
         .insert([newEntry]);
 
       if (error) throw error;
       
-      // 2. Clear the form immediately
       setFormData({ title: '', description: '', sourceFile: '' });
-      
-      // 3. Set success message (UiPath looks for this text)
       setStatusMessage('SUCCESS: SAVED TO CLOUD');
       
-      // 4. Trigger the refresh in App.js with a small 500ms delay
-      // This ensures the database has indexed the new row before we fetch it
       if (onUploadSuccess) {
         setTimeout(() => {
           onUploadSuccess();
@@ -50,26 +44,27 @@ const IncidentForm = ({ onUploadSuccess }) => {
       setStatusMessage('ERROR: ' + err.message);
     } finally {
       setIsSubmitting(false);
-      // Clear the success/error banner after 5 seconds to stay clean for next run
       setTimeout(() => setStatusMessage(''), 5000);
     }
   };
 
   return (
     <div style={{ 
-      padding: '25px', 
-      border: '1px solid #ddd', 
-      marginBottom: '30px', 
-      borderRadius: '10px', 
-      backgroundColor: '#ffffff',
+      padding: '25px', border: '1px solid #ddd', 
+      borderRadius: '10px', backgroundColor: '#ffffff', 
       boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
     }}>
-      <h3 style={{ color: '#d40511', marginTop: 0, borderBottom: '2px solid #d40511', paddingBottom: '10px' }}>
-        DHL RPA Cloud Console
+      
+      {/* Refined Form Header */}
+      <h3 style={{ 
+        color: '#d40511', marginTop: 0, 
+        borderBottom: '2px solid #d40511', paddingBottom: '10px',
+        marginBottom: '20px' 
+      }}>
+        RPA Input Terminal
       </h3>
       
       <form onSubmit={handleSubmit}>
-        {/* Subject Input */}
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', color: '#444' }}>Subject:</label>
           <input 
@@ -82,21 +77,14 @@ const IncidentForm = ({ onUploadSuccess }) => {
           />
         </div>
 
-        {/* AI Summary Textarea */}
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', color: '#444' }}>AI-Generated Summary:</label>
           <textarea 
             id="input-description"
             style={{ 
-              display: 'block', 
-              width: '100%', 
-              height: '140px', 
-              padding: '12px', 
-              borderRadius: '4px', 
-              border: '1px solid #ccc', 
-              fontFamily: 'inherit',
-              boxSizing: 'border-box',
-              resize: 'vertical'
+              display: 'block', width: '100%', height: '140px', padding: '12px', 
+              borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit',
+              boxSizing: 'border-box', resize: 'vertical'
             }}
             placeholder="AI Summary will appear here..." 
             value={formData.description}
@@ -105,7 +93,6 @@ const IncidentForm = ({ onUploadSuccess }) => {
           />
         </div>
 
-        {/* Source File Input */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', color: '#444' }}>Source Reference:</label>
           <input 
@@ -118,36 +105,24 @@ const IncidentForm = ({ onUploadSuccess }) => {
           />
         </div>
 
-        {/* Submit Button */}
         <button 
           id="btn-submit" 
           type="submit" 
           disabled={isSubmitting}
           style={{ 
             backgroundColor: isSubmitting ? '#ccc' : '#ffcc00', 
-            color: '#000', 
-            padding: '15px', 
-            border: 'none', 
-            fontWeight: 'bold', 
-            cursor: isSubmitting ? 'not-allowed' : 'pointer', 
-            borderRadius: '4px', 
-            width: '100%',
-            fontSize: '16px',
-            transition: 'background-color 0.3s'
+            color: '#000', padding: '15px', border: 'none', fontWeight: 'bold', 
+            cursor: isSubmitting ? 'not-allowed' : 'pointer', borderRadius: '4px', 
+            width: '100%', fontSize: '16px', transition: 'background-color 0.3s'
           }}
         >
           {isSubmitting ? 'SAVING TO CLOUD...' : 'SUBMIT TO KNOWLEDGE BASE'}
         </button>
       </form>
 
-      {/* RPA Status Message (Invisible to humans unless active, readable by Robot) */}
       {statusMessage && (
         <div id="rpa-status" style={{ 
-          marginTop: '15px', 
-          padding: '12px', 
-          borderRadius: '4px', 
-          textAlign: 'center', 
-          fontWeight: 'bold',
+          marginTop: '15px', padding: '12px', borderRadius: '4px', textAlign: 'center', fontWeight: 'bold',
           backgroundColor: statusMessage.includes('ERROR') ? '#ffebee' : '#e8f5e9',
           color: statusMessage.includes('ERROR') ? '#c62828' : '#2e7d32',
           border: `1px solid ${statusMessage.includes('ERROR') ? '#ef9a9a' : '#a5d6a7'}`
